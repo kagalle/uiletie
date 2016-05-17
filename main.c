@@ -14,7 +14,7 @@
 /*
  * Test using:
 # pwd: /home/ken/nethome/nanomsg/Pipeline/dist/Debug/GNU-Linux
-bash-4.3$ ./pipeline node1 ipc:///tmp/pipeline.ipc "QUIT"
+bash-4.3$ ./pipeline node1 ipc:///tmp/pipeline.ipc "[ { \"name\" : \"QUIT\" } ]"
 node: node1
 NODE1: SENDING "QUIT"
 
@@ -43,10 +43,10 @@ const char *uliletie_parse(char *buf) {
     int i;
     
     /* parsing json and validating output */
-    root_value = json_parse_file(buf);
+    root_value = json_parse_string(buf);
     if (json_value_get_type(root_value) != JSONArray) {
 /*        system(cleanup_command); */
-        return;
+        return;  /* return what - this need to be a value */
     }
 
     /* getting array from root value and printing commit info */
@@ -54,7 +54,7 @@ const char *uliletie_parse(char *buf) {
     printf("%-10.10s %-10.10s %s\n", "Date", "SHA", "Author");
     for (i = 0; i < json_array_get_count(commands); i++) {
         command = json_array_get_object(commands, i);
-        const char *command_string = json_object_dotget_string(command, "command.name");
+        const char *command_string = json_object_dotget_string(command, "name");
         return command_string;
     }
 }
@@ -67,7 +67,7 @@ int uliletie_serve(char *url) {
         char *buf = NULL;
         int bytes = nn_recv(sock, &buf, NN_MSG, 0);
         assert(bytes >= 0);
-        printf("Uiletie serve received: \"%s\"\n", buf);
+        printf("Uiletie serve received: %s\n", buf);
         // parse the input
         const char *command = uliletie_parse(buf);
         if (strcmp("QUIT", command) == 0) {
