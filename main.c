@@ -26,12 +26,25 @@ NODE1: SENDING "QUIT"
 #include <nanomsg/pipeline.h>
 #include "parson.h"
 /*
- * 
+ JSON:  { parameterName : parameterValue }
  */
-int main(int argc, char** argv) {
-    fprintf(stderr, "starting server: %s\n", argv[1]);
-    return uliletie_serve(argv[1]);
-}
+typedef struct _ParamData {
+    char *parameterName;
+    char *parameterValue;
+} ParamData;
+
+/*
+ JSON:  [ command , ParamData... ]
+ */
+typedef struct _EventData {
+    char *command;
+    ParamData *params;  /* the contents within will vary depending on the command */
+} EventData;
+
+typedef struct _Method {
+    EventData *commandList;
+} Method;
+
 
 /*
  * to start with, just parse out the command.
@@ -76,4 +89,9 @@ int uliletie_serve(char *url) {
         }
     }
     return 0;
+}
+
+int main (const int argc, const char **argv) {
+    fprintf(stderr, "starting server: %s\n", argv[1]);
+    return uliletie_serve(argv[1]);
 }
